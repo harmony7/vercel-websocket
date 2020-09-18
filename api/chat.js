@@ -6,11 +6,13 @@ const serveGrip = new ServeGrip({grip: process.env.GRIP_URL});
 module.exports = async (req, res) => {
 
     if (!(await serveGrip.run(req, res))) {
+        console.log("run returned false");
         return;
     }
 
     const { wsContext } = req.grip;
     if (wsContext == null) {
+        console.log("wsContext is null");
         res.statusCode = 400;
         res.end('Not a WebSocket-over-HTTP request\n');
         return;
@@ -18,6 +20,7 @@ module.exports = async (req, res) => {
 
     // if this is a new connection, accept it and subscribe it to a channel
     if (wsContext.isOpening()) {
+        console.log("wsContext isOpening is true");
         wsContext.accept();
         wsContext.subscribe('all');
     }
@@ -27,6 +30,7 @@ module.exports = async (req, res) => {
 
         if (message == null) {
             // if return value is undefined then connection is closed
+            console.log("wsContext closed");
             wsContext.close();
             break;
         }
@@ -36,5 +40,6 @@ module.exports = async (req, res) => {
         await publisher.publishFormats('all', new WebSocketMessageFormat(message));
     }
 
+    console.log("calling res.end");
     res.end();
 };
